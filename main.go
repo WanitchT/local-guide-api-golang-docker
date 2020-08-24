@@ -3,16 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/app/local-guide-api-golang-docker/helper"
 	"github.com/app/local-guide-api-golang-docker/models"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ResMsg struct {
@@ -29,21 +27,30 @@ func getCommentHeader(w http.ResponseWriter) http.ResponseWriter {
 func getComment(w http.ResponseWriter, r *http.Request) {
 
 	w = getCommentHeader(w)
+	//var comments models.Comments
 	// we created Book array
-	var newses []models.News
+	var comment_array []models.Comments
+
+	// we get params with mux.
+	var params = mux.Vars(r)
+
+	// string to primitive.ObjectID
+	guideid, _ := params["guideid"]
+	fmt.Println(guideid)
 
 	//Connection mongoDB with helper class
 	collection := helper.ConnectDB()
 
 	// bson.M{},  we passed empty filter. So we want to get all data.
-	options := options.Find()
-	sort := bson.D{}
+	//options := options.Find()
+	//sort := bson.D{}
 	//sort = append(sort, bson.E{"createdAt", -1})
 
-	options.SetSort(sort)
+	//options.SetSort(sort)
 
-	filter := bson.M{}
-	cur, err := collection.Find(context.TODO(), filter, options)
+	filter := bson.M{"guideid": guideid}
+	//cur, err := collection.Find(context.TODO(), filter, options)
+	cur, err := collection.Find(context.TODO(), filter)
 
 	if err != nil {
 		helper.GetError(err, w)
@@ -58,21 +65,21 @@ func getComment(w http.ResponseWriter, r *http.Request) {
 	for cur.Next(context.TODO()) {
 
 		// create a value into which the single document can be decoded
-		var news models.News
+		var comments models.Comments
 		// & character returns the memory address of the following variable.
-		err := cur.Decode(&news) // decode similar to deserialize process.
+		err := cur.Decode(&comments) // decode similar to deserialize process.
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		// add item our array	//line 20
-		newses = append(newses, news)
+		comment_array = append(comment_array, comments)
 	}
 
 	var Response ResMsg
 	Response.Response_status = "success"
-	Response.Response_message = "Get News Success!"
-	Response.Response_data = newses
+	Response.Response_message = "Get Comment Success!"
+	Response.Response_data = comment_array
 
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
@@ -81,65 +88,12 @@ func getComment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response) // encode similar to serialize process.
 }
 
-func getNewByID(w http.ResponseWriter, r *http.Request) {
-	// set header.
-	//5f3e757a2b8ee35c04f2d43f
-	w = getCommentHeader(w)
-	var news models.News
-	// we get params with mux.
-	var params = mux.Vars(r)
-
-	// string to primitive.ObjectID
-	id, _ := primitive.ObjectIDFromHex(params["id"])
-
-	collection := helper.ConnectDB()
-
-	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
-	filter := bson.M{"_id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&news)
-
-	if err != nil {
-		helper.GetError(err, w)
-		return
-	}
-
-	var Response ResMsg
-	Response.Response_status = "success"
-	Response.Response_message = "Get news by id success!"
-	Response.Response_data = news
-
-	json.NewEncoder(w).Encode(Response)
-}
-
-func createNews(w http.ResponseWriter, r *http.Request) {
-	w = getCommentHeader(w)
-	var news models.News
-
-	// we decode our body request params
-	_ = json.NewDecoder(r.Body).Decode(&news)
-
-	// connect db
-	collection := helper.ConnectDB()
-
-	// insert our book model.
-	news.CreatedAt = time.Now().Add(time.Duration(15) * time.Minute)
-	news.UpdatedAt = time.Now().Add(time.Duration(15) * time.Minute)
-	result, err := collection.InsertOne(context.TODO(), news)
-
-	if err != nil {
-		helper.GetError(err, w)
-		return
-	}
-
-	json.NewEncoder(w).Encode(result)
-}
-
 func main() {
 
 	r := mux.NewRouter()
-	r.HandleFunc("/go/getComment", getComment).Methods("GET")
-	r.HandleFunc("/go/getCommentById/{id}", getNewByID).Methods("GET")
-	//r.HandleFunc("/admin/addNews", createNews).Methods("POST")
+	r.HandleFunc("/go/getComment/{guideid}", getComment).Methods("POST")
+	//r.HandleFunc("/go/getCommentById/{id}", getNewByID).Methods("GET")
+	//r.HandleFunc("/admin/addNews", createComments).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 
