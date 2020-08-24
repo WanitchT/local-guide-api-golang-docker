@@ -16,7 +16,7 @@ import (
 func ConnectDB() *mongo.Collection {
 
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://baac.topwork.asia:27017/CheckSalakDB")
+	clientOptions := options.Client().ApplyURI("mongodb://baac.topwork.asia:27017/fighto")
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -27,7 +27,7 @@ func ConnectDB() *mongo.Collection {
 
 	fmt.Println("Connected to MongoDB!")
 
-	collection := client.Database("CheckSalakDB").Collection("news")
+	collection := client.Database("fighto").Collection("localguide_comment")
 
 	return collection
 }
