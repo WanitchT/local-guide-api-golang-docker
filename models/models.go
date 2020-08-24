@@ -5,13 +5,13 @@ import (
 )
 
 //Create Struct
-type News struct {
+type Comments struct {
 	ID            primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	guideid       string             `json:"guideid,omitempty" bson:"guideid,omitempty"`
-	useridcomment string             `json:"useridcomment" bson:"useridcomment,omitempty"`
-	useremail     string             `json:"useremail" bson:"useremail,omitempty"`
-	avatar        string             `json:"avatar" bson:"avatar,omitempty"`
-	author        string             `json:"author" bson:"author,omitempty"`
-	datecomment   string             `json:"datecomment" bson:"datecomment,omitempty"`
-	message       string             `json:"message" bson:"message,omitempty"`
+	Guideid       string             `json:"guideid,omitempty" bson:"guideid,omitempty"`
+	UseridComment string             `json:"useridcomment" bson:"useridcomment,omitempty"`
+	Useremail     string             `json:"useremail" bson:"useremail,omitempty"`
+	Avatar        string             `json:"avatar" bson:"avatar,omitempty"`
+	Author        string             `json:"author" bson:"author,omitempty"`
+	DateComment   string             `json:"datecomment" bson:"datecomment,omitempty"`
+	Message       string             `json:"message" bson:"message,omitempty"`
 }

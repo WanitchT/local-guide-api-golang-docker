@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tkanos/gonfig"
+	"../github.com/tkanos/gonfig"
 )
 
 type Configuration struct {
